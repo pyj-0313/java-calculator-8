@@ -13,7 +13,6 @@ public final class StringCalculator {
             return 0;
         }
 
-        // "\n"이 문자 그대로 들어올 때를 실제 줄바꿈으로 정규화
         final String input = rawInput.replace(NEWLINE_LITERAL, "\n");
 
         String numbers = input;
@@ -21,19 +20,32 @@ public final class StringCalculator {
 
         if (input.startsWith("//")) {
             final int newlineIndex = input.indexOf('\n');
-            if (newlineIndex < 0) {
-                throw new IllegalArgumentException("커스텀 구분자 형식 오류");
-            }
+            if (newlineIndex < 0) throw new IllegalArgumentException("커스텀 구분자 형식 오류");
             final String custom = input.substring(2, newlineIndex);
             numbers = input.substring(newlineIndex + 1);
             delimiterRegex = Pattern.quote(custom) + "|" + DEFAULT_DELIMITER_REGEX;
         }
 
-        String[] tokens = numbers.split(delimiterRegex);
+        final String[] tokens = numbers.split(delimiterRegex);
+
         int sum = 0;
-        for (String token : tokens) {
-            sum += Integer.parseInt(token);
+        for (final String token : tokens) {
+            validateToken(token);
+            final int n = Integer.parseInt(token);
+            if (n <= 0) {
+                throw new IllegalArgumentException("양수만 입력할 수 있습니다.");
+            }
+            sum += n;
         }
         return sum;
+    }
+
+    private static void validateToken(final String token) {
+        if (token.isBlank()) {
+            throw new IllegalArgumentException("비어있는 숫자 항목이 있습니다.");
+        }
+        if (!token.chars().allMatch(Character::isDigit)) {
+            throw new IllegalArgumentException("숫자가 아닌 값이 포함되어 있습니다.");
+        }
     }
 }
